@@ -41,7 +41,7 @@ export async function POST(req){
     const openai = new OpenAI()
 
     const text = data[data.length-1].content
-    const embedding = await OpenAI.Embeddings.create({
+    const embedding = await openai.embeddings.create({
         model: 'text-embedding-3-small',
         input: 'text',
         encoding_format:'float',
@@ -78,7 +78,7 @@ export async function POST(req){
         stream: true,
     })
     
-    const stream = ReadableStream({
+    const stream = new ReadableStream({
         async start(controller){
             const encoder = new TextEncoder()
             try{
@@ -90,6 +90,13 @@ export async function POST(req){
                     }
                 }
             }
+            catch (err){
+                controller.error(err)
+            }
+            finally {
+                controller.close()
+            }
         }
     })
+    return new NextResponse(stream)
 }
